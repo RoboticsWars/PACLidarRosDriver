@@ -81,10 +81,13 @@ static inline void push_lidarScan(ros::Time start,int point_count,
     s_scan_msg.header.frame_id = s_outCloud.header.frame_id;
     scan_count++;
 
-    s_scan_msg.angle_min =  M_PI - DEG2RAD(0);
-    s_scan_msg.angle_max =  M_PI - DEG2RAD(360);
-    s_scan_msg.angle_increment =DEG2RAD(0.0625);
-            //(s_scan_msg.angle_max - s_scan_msg.angle_min) / (double)(point_count-1);
+    //    s_scan_msg.angle_min =  DEG2RAD(0);
+    //    s_scan_msg.angle_max =  DEG2RAD(360-0.0625);
+    s_scan_msg.angle_min =  DEG2RAD(0)-M_PI;
+    s_scan_msg.angle_max =  DEG2RAD(360-0.0625) - M_PI;
+
+    s_scan_msg.angle_increment = DEG2RAD(0.0625);
+    //(s_scan_msg.angle_max - s_scan_msg.angle_min) / (double)(point_count-1);
 
     s_scan_msg.scan_time = scan_time;
     s_scan_msg.time_increment = scan_time / (double)(point_count-1);
@@ -96,14 +99,30 @@ static inline void push_lidarScan(ros::Time start,int point_count,
     s_scan_msg.intensities.resize(point_count);
     s_scan_msg.ranges.resize(point_count);
     if (!inverted) {
+
+        int offsetIndex = point_count/2 ;
+        int tmpindx = 0;
         for (size_t i = 0; i < point_count; i++) {
-            float read_value = s_lineRawData[i].distance;
+            tmpindx = (i+offsetIndex)%point_count;
+
+            float read_value = s_lineRawData[ tmpindx ].distance;
             if (read_value == 0.0)
                 s_scan_msg.ranges[i] = std::numeric_limits<float>::infinity();
             else
                 s_scan_msg.ranges[i] = read_value;
-            s_scan_msg.intensities[i] = s_lineRawData[i].intent ;
+            s_scan_msg.intensities[i] = s_lineRawData[tmpindx].intent ;
         }
+
+
+        //        for (size_t i = 0; i < point_count; i++) {
+        //            float read_value = s_lineRawData[i].distance;
+        //            if (read_value == 0.0)
+        //                s_scan_msg.ranges[i] = std::numeric_limits<float>::infinity();
+        //            else
+        //                s_scan_msg.ranges[i] = read_value;
+        //            s_scan_msg.intensities[i] = s_lineRawData[i].intent ;
+        //        }
+
     } else {
         for (size_t i = 0; i < point_count; i++) {
             float read_value =  s_lineRawData[i].distance;
@@ -284,14 +303,14 @@ static inline int processLidarPackage(Lidar_Data_Package *package, sensor_msgs::
             tmpRaw.distance = 0 ;
             tmpRaw.intent = 0 ;
         }
-//        float tmpValue = tmpAngle -lastAngle;
-//        if( tmpValue > 5 && tmpValue < 200) {
-//            //ROS_INFO("difAngle %f, lastAngle %f, tmpAngle %f",difAngle,lastAngle,tmpAngle);
-//            filler_angle_data(0.625,225.0,315.0);
-//        } else if(tmpValue < 1 && tmpValue > 0 ){
-//            //difAngle = ( tmpValue+difAngle)/2.0;
-//            difAngle = 0.125;
-//        }
+        //        float tmpValue = tmpAngle -lastAngle;
+        //        if( tmpValue > 5 && tmpValue < 200) {
+        //            //ROS_INFO("difAngle %f, lastAngle %f, tmpAngle %f",difAngle,lastAngle,tmpAngle);
+        //            filler_angle_data(0.625,225.0,315.0);
+        //        } else if(tmpValue < 1 && tmpValue > 0 ){
+        //            //difAngle = ( tmpValue+difAngle)/2.0;
+        //            difAngle = 0.125;
+        //        }
 
         int tmpIndex = tmpAngle/LIDAR_SCAN_ANGLE_SCALE;
         s_lineRawData[tmpIndex] = tmpRaw;

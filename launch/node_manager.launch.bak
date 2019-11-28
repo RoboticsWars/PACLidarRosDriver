@@ -1,0 +1,22 @@
+<!-- -*- mode: XML -*- args="1" -->
+<launch>
+
+<!--可以同时配置多台设备的节点启动，每台设备需要两个节点组合driver_node节点、calculation_node节点，同时需要修改相应的话题和服务的名称-->
+
+<node pkg="lidar_driver" type="driver_node" name="driver_node" >
+  <param name="advertise_name" value="lidar_packets" />
+  <param name="control_name" value="lidar_control"/>
+  <param name="device_ip" value="192.168.1.13" />
+  <param name="device_port" value="5000" />
+  <param name="pc_port"     value="6000" />
+  <param name="fps" value="10"/>
+  <param name="frame_id" value="/world"/>
+</node>
+
+<node pkg="lidar_driver" type="calculation_node" name="calculation_node" >
+  <param name="advertise_name" value="lidar_points" />
+  <param name="subscribe_name" value="lidar_packets" />
+  <param name="frame_id" value="/world"/>
+</node>
+
+</launch>
