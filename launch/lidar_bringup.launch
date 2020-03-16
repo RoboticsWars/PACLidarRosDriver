@@ -1,0 +1,50 @@
+<launch>
+
+	<arg name="paclidar_ip" default="192.168.1.199"/>
+	<arg name="paclidar_pointclound" default="lidar_points"/>
+	<arg name="paclidar_lidarscan" default="lidarScan"/>
+  <arg name="angle_offset" default="0" />
+
+    <node pkg="lidar_driver" type="driver_node" name="driver_node" >
+		<remap from="/lidar_driver/$(arg paclidar_lidarscan)" to="/scan"/>
+        <param name="advertise_name" value="$(arg paclidar_pointclound)" />
+        <param name="advertise_lidarScan_name" value="$(arg paclidar_lidarscan)" />
+        <param name="control_name" value="lidar_control"/>
+        <param name="device_ip" value="$(arg paclidar_ip)" />
+        <param name="device_port" value="5000" />
+        <param name="pc_port"     value="6000" />
+        <param name="fps" value="10"/>
+        <param name="frame_id" value="paclidar_link"/>
+        <param name="angle_compensate"    type="bool"   value="true"/>
+        <param name="section_agl_start_1" value="0"/>
+        <param name="section_agl_end_1" value="360"/>
+
+        <param name="section_agl_start_2" value="0"/>
+        <param name="section_agl_end_2" value="0"/>
+
+        <param name="section_agl_start_3" value="0"/>
+        <param name="section_agl_end_3" value="0"/>
+
+        <param name="section_agl_start_4" value="0"/>
+        <param name="section_agl_end_4" value="0"/>
+
+        <param name="section_agl_start_5" value="0"/>
+        <param name="section_agl_end_5" value="0"/>
+
+        <param name="point_cloud2_enable"   value="1"/>
+        <param name="laser_scan_enable"     value="1"/>
+
+        <param name="angle_offset"          value="$(arg angle_offset)"/>
+	</node>
+
+	<!-- <include file="$(find kobuki_x_description)/launch/paclidar_pointclound_to_laserscan.launch"> -->
+	<!-- </include> -->
+
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_paclidar"
+		args="0 0 0.62 0 0 0 base_link paclidar_link 100" />
+	<!-- <node pkg="tf" type="static_transform_publisher" name="base_link_to_paclidar"
+		args="0 0 0.62 -1.57079 0 0 base_link paclidar_link 100" /> -->
+	<!--<node pkg="tf" type="static_transform_publisher" name="map_to_paclidar"-->
+		<!--args="0.0 0.0 0.1 0.0 0.0 0.0 map /paclidar_link 100" />-->
+
+</launch>
