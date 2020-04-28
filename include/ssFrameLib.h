@@ -10,12 +10,15 @@ using namespace std;
 #define CMD_SCAN_SPEED_15HZ  15
 #define CMD_SCAN_SPEED_20HZ  20
 
-static int ANGLE_SPEED_10HZ = 0x0a50;//0x500a;
-static int ANGLE_SPEED_15HZ = 0x0f50;//0x500f;
-static int ANGLE_SPEED_20HZ = 0x1450;//0x5014;
+static unsigned short ANGLE_SPEED_10HZ = 0x0a50;
+static unsigned short ANGLE_SPEED_15HZ = 0x0f50;
+static unsigned short ANGLE_SPEED_20HZ = 0x1450;
 
-static int LIDAR_START_CMD = 0x6273;//0x7362;
-static int LIDAR_STOP_CMD   = 0x706f;//0x6F70;
+static unsigned short LIDAR_START_CMD = 0x6273;
+static unsigned short LIDAR_STOP_CMD   = 0x706f;
+
+static unsigned short LIDAR_DATATYPE_0 = 0X7464;
+static unsigned short LIDAR_DATATYPE_1 = 0X7564;
 
 static unsigned short DEVICE_PORT_NUMBER = 5000;
 static unsigned short PC_PORT_NUMBER = 6000;
@@ -27,10 +30,10 @@ static unsigned short UDP_FRAME_MIN = 18;
 typedef enum {
     eDevCmdIdle = 0,
     eDevCmdWork,
-    eDevCmdSimu,
-    eDevCmdBreak,
-    eDevCmdReset,
-    eDevCmdAsk,
+    eDevCmdDataType,
+//    eDevCmdBreak,
+//    eDevCmdReset,
+//    eDevCmdAsk,
 } LIDAR_CMD_E;
 
 typedef struct {

@@ -18,6 +18,9 @@ public:
   void getPackage();
   int setupLidar();
   void closeLidar();
+  int setSpeed(int speed);
+  int setCommand(unsigned short worlk);
+  int setDataType(int type);
 private:
   lidar_driver::TCPSocketAPI *m_devapi;
 
@@ -26,6 +29,7 @@ private:
   LIDAR_COMMAND_S m_command ;
   pthread_t m_dataThread;
   int m_fps;
+  int m_datatype;
 
 };
 

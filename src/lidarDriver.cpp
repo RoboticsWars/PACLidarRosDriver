@@ -133,10 +133,16 @@ Device_Driver::Device_Driver(ros::NodeHandle mtNode, int type)
     ros::param::get(speed_path,m_fps);
     ROS_INFO("%s : speed_path  %d : %s",node_name.c_str(), m_fps, speed_path.c_str() );
 
+    //data type name
+    m_datatype = LIDAR_DATATYPE_0;
+    std::string datatype_path = node_name + "/data_type";
+    ros::param::get(datatype_path,m_datatype);
+    ROS_INFO("%s : datatype_path  %d : %s",node_name.c_str(), m_datatype, datatype_path.c_str() );
+
     m_angle_offset = 0 ;
     std::string angle_offset_path = node_name + "/angle_offset";
     ros::param::get(angle_offset_path,m_angle_offset);
-    ROS_INFO("%s : speed_path  %d : %s",node_name.c_str(), m_angle_offset, angle_offset_path.c_str() );
+    ROS_INFO("%s : angle_offset_path  %d : %s",node_name.c_str(), m_angle_offset, angle_offset_path.c_str() );
 
     m_command.cmdstat = (LIDAR_CMD_E)1 ;
     m_command.scnSpeed = m_fps;
@@ -185,11 +191,11 @@ int Device_Driver::spinOnce()
 /** @brief control the device
          *  @param .parameters
          */
-int Device_Driver::prog_Set(LIDAR_COMMAND_S &program)
-{
-    unsigned short tmpcmd = 0 ;
 
-    switch (program.scnSpeed) {
+int Device_Driver::setSpeed(int speed)  {
+    unsigned short tmpcmd = 0 ;
+    int rtn = 0 ;
+    switch (speed) {
     case CMD_SCAN_SPEED_10HZ:
         tmpcmd =ANGLE_SPEED_10HZ;
         break;
@@ -203,21 +209,57 @@ int Device_Driver::prog_Set(LIDAR_COMMAND_S &program)
           tmpcmd =ANGLE_SPEED_20HZ;
         break;
     }
-    m_devapi->ioWrite( (unsigned char *)&tmpcmd, sizeof(tmpcmd) );
+    rtn = m_devapi->ioWrite( (unsigned char *)&tmpcmd, sizeof(tmpcmd) );
+    return rtn;
+}
+
+int Device_Driver::setCommand(unsigned short worlk) {
+    int rtn = 0 ;
+    unsigned short tmpcmd = worlk ;
+    rtn = m_devapi->ioWrite( (unsigned char *)&tmpcmd, sizeof(tmpcmd) );
+    return rtn;
+}
+
+int Device_Driver::setDataType(int type) {
+    int rtn = 0 ;
+    unsigned short tmpcmd = LIDAR_DATATYPE_0 ;
+    switch (type) {
+    case 0:
+        tmpcmd = LIDAR_DATATYPE_0 ;
+        break;
+    case 1:
+        tmpcmd = LIDAR_DATATYPE_1 ;
+        break;
+    }
+    rtn = setCommand(tmpcmd);
+    return rtn;
+}
+
+int Device_Driver::prog_Set(LIDAR_COMMAND_S &program)
+{
 
     switch (program.cmdstat) {
     case eDevCmdIdle:
-        tmpcmd =LIDAR_STOP_CMD;
+        setSpeed(program.scnSpeed);
+        setCommand(LIDAR_STOP_CMD);
+        m_command = program;
         break;
     case eDevCmdWork:
-        tmpcmd = LIDAR_START_CMD;
+        setSpeed(program.scnSpeed);
+        setCommand(LIDAR_START_CMD);
+        m_command = program;
+        break;
+    case eDevCmdDataType:
+        setDataType(program.scnSpeed);
+        //m_datatype = program.scnSpeed;
         break;
     default:
-        tmpcmd = LIDAR_START_CMD;
+        setSpeed(program.scnSpeed);
+        setCommand(LIDAR_START_CMD);
         break;
     }
-    m_devapi->ioWrite( (unsigned char *)&tmpcmd, sizeof(tmpcmd) );
-    m_command = program;
+
+
     return 0;
 }
 
@@ -231,6 +273,8 @@ void Device_Driver::getPackage()
 
 int Device_Driver::setupLidar()
 {
+    setDataType(m_datatype);
+
     LIDAR_COMMAND_S tmpProg ;
     tmpProg.cmdstat = eDevCmdWork;
     tmpProg.scnSpeed =  m_fps;

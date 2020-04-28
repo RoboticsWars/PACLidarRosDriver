@@ -242,6 +242,7 @@ int TCPSocketAPI::ioWrite(unsigned char *data, int size)
         nleft -= nwritten;
         data   += nwritten;
     }
+    usleep(50000);
     return (size);
 }
 
